@@ -4,9 +4,17 @@ import logging
 import requests
 from jsonrpcclient import request, parse, Ok
 
+import packer
+
 url = 'http://localhost:8545' # url of my geth node
 
-### Get account
+print("[*] Waiting for data in stdin... (hint: pipe something in)")
+
+### First of all pack data into blobs
+data = sys.stdin.buffer.read()
+blobs = packer.get_blobs_from_data(data)
+
+### Get account from JSON-RPC
 response = requests.post(url, json=request('eth_accounts'))
 parsed = parse(response.json())
 if not isinstance(parsed, Ok):
@@ -29,20 +37,16 @@ if not isinstance(parsed, Ok):
 nonce = parsed.result[0]
 print("[*] Going with nonce: %s" % (nonce))
 
-# Create some blobs
-blob1_data = b'\x42'*4096*32
-blob1 = "0x" + blob1_data.hex()
-
 ### Create transaction
 tx_params = {
     'from': my_address,
     'to' : '0xae64071b92ae1573ac9b5f6a0dc3bb1cfd5121ef',
     'nonce' : hex(int(nonce)),
     'data' : "0xdeadbeef",
-    'blobs' : [blob1],
+    'blobs' : blobs,
     'maxFeePerGas' : hex(22000),
     'maxPriorityFeePerGas' : hex(22000),
-    'gas' : hex(141064)
+    'gas' : hex(261064) # XXX assume two blobs
 }
 
 # Pass the transaction to be signed
@@ -56,4 +60,4 @@ print(parsed)
 # Push the signed transaction to the interwebs
 response = requests.post(url, json=request('eth_sendRawTransaction', params=([raw_tx])))
 parsed = parse(response.json())
-print("[*] Just sent something and got: %s" % (parsed.message))
+print("[*] Submitted tx with tx hash:", parsed.result)
