@@ -40,9 +40,9 @@ tx_params = {
     'nonce' : hex(int(nonce)),
     'data' : "0xdeadbeef",
     'blobs' : [blob1],
-    'maxFeePerGas' : hex(12000),
-    'maxPriorityFeePerGas' : hex(12000),
-    'gas' : hex(20000)
+    'maxFeePerGas' : hex(22000),
+    'maxPriorityFeePerGas' : hex(22000),
+    'gas' : hex(141064)
 }
 
 # Pass the transaction to be signed
